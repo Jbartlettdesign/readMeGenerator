@@ -8,22 +8,38 @@ const generator = require('../generation');
 //title of my project and sections entitled Description, 
 //Table of Contents, Installation, Usage, License, 
 //Contributing, Tests, and Questions
-const finalQuestions= (answers) => {
-return inquirer
-.prompt([
+const contributeTest = (answers) => {
+    if(!answers.contributionAndTests){
+        answers.contributionAndTests = [];
+    } 
+    return inquirer
+    .prompt([
+    
     {
         type:'input',
-        name: 'credits',
-        message:'List your collaborators, if any, with links to their GitHub profiles.',
-        validate: credits => {
-            if (credits) {
-              return true;
-            } else {
-              console.log('Cannot skip!');
-              return false;
-            }
-          }
+        name: 'contribute',
+        message: 'If you created an application or package and would like other developers to contribute it, you will want to add guidelines for how to do so. The Contributor Covenant is an industry standard, but you can always write your own.'
     },
+    {
+        type:'input',
+        name: 'tester',
+        message: 'Go the extra mile and write tests for your application. Then provide examples on how to run them.'
+    }
+
+    ]).then(
+        info => {
+            answers.contributionAndTests.push(info);
+            return answers;
+        }
+    )
+}
+const licenses = (answers) => {
+    if(!answers.license){
+        answers.license = [];
+    } 
+    return inquirer
+    .prompt ([
+        
     {
         type:'input',
         name: 'license',
@@ -36,42 +52,87 @@ return inquirer
               return false;
             }
           }
+    },
+           {
+               type:'confirm',
+               name: 'addAnother',
+               message:'Add another license?',
+           }
+    ])
+    .then(info => {
+        if(info.addAnother){
+            answers.license.push(info)
+            return licenses(answers);
+        }
+        else 
+        {            
+            answers.license.push(info)
+            return answers;
+        }
+
+    
+})
+}
+const creditor = (answers) => {
+
+if (!answers.credits) {
+    answers.credits = [];
+}
+return inquirer
+.prompt([
+    {
+        type:'input',
+        name: 'credits',
+        message:'List your collaborators, if any, with links to their GitHub profiles.',
+        validate: credits => {
+            if (credits) {
+
+              return true;
+            } else {
+              console.log('Cannot skip!');
+              return false;
+            }
+          }
     }
 ])
-.then(answers => {   
+.then(info => {
+    answers.credits.push(info); 
     return answers;
 })
 }
 const screenShot = (answers) => {
+    if(!answers.screenshot){
+        answers.screenshot = [];
+    } 
     return inquirer
     .prompt ([
-        
         {
             type:'input',
-            name: 'insertScreenShot',
-            message:'Insert screenshot',
+            name: 'enterScreenshot',
+            message: 'To add a screenshot, create an assets/images folder in your repository and upload your screenshot to it. Then, using the relative filepath, add it to your README using the following syntax: ![alt text](assets/images/screenshot.png)',
             validate: screenshot => {
-                if (screenshot) {
-                  return true;
-                } else {
-                  console.log('Cannot skip!');
-                  return false;
-                }
-              }
-        },
-        {
-            type:'confirm',
-            name: 'addAnother',
-            message:'Add another screenshot?',
-            when:({insertScreenShot}) => insertScreenShot
-        }
+               if (screenshot) {
+                 return true;
+               } else {
+                 console.log('Cannot skip!');
+                 return false;
+               }
+             }
+           },
+           {
+               type:'confirm',
+               name: 'addAnother',
+               message:'Add another screenshot?',
+           }
     ])
     .then(info => {
         if(info.addAnother){
+            answers.screenshot.push(info)
             return screenShot(answers);
         }
         else 
-        {
+        {            
+            answers.screenshot.push(info)
             return answers;
         }
 
@@ -79,7 +140,10 @@ const screenShot = (answers) => {
 })
 }
 
-const nextQuestions = (answers) =>{
+const instructions = (answers) =>{
+    if(!answers.usage){
+        answers.usage = []
+    }
     return inquirer
     .prompt ([
         {
@@ -94,45 +158,17 @@ const nextQuestions = (answers) =>{
               return false;
             }
           }
-        },
-        {
-         type:'confirm',
-         name: 'screenshot',
-         message: 'Enter a screenshot to help others navigate the usage?',
-         default: false
-        },
-        {
-         type:'input',
-         name: 'enterScreenshot',
-         message: 'To add a screenshot, create an assets/images folder in your repository and upload your screenshot to it. Then, using the relative filepath, add it to your README using the following syntax: ![alt text](assets/images/screenshot.png)',
-         when:({screenshot}) => screenshot,
-         validate: screenshot => {
-            if (screenshot) {
-              return true;
-            } else {
-              console.log('Cannot skip!');
-              return false;
-            }
-          }
-        },
-        {
-            type:'confirm',
-            name: 'addAnother',
-            message:'Add another screenshot?',
         }
+        
     ]).then(info =>{
-        if(info.addAnother){
-            return screenshot(answers)
-
-        }
-        else
-        {
-        return answers;
-    }
+            answers.usage.push(info);
+            //answers.push(info);   
+            return answers;
         })
+        
     
 }
-const aditionalQuestions = (answers) => {
+const install = (answers) => {
 if(!answers.install){
     answers.install = [];
 } 
@@ -165,7 +201,7 @@ return inquirer
     
     if(additional.addAnotherStep){
         answers.install.push(additional);
-        return aditionalQuestions(answers);
+        return install(answers);
     }
     else{
         
@@ -231,9 +267,12 @@ return inquirer
 function init() {
     
     promptUser()
-    .then(aditionalQuestions)
-    /*.then(nextQuestions)
-    .then(finalQuestions)*/
+    .then(install)
+    .then(instructions)
+    .then(screenShot)
+    .then(licenses)
+    .then(creditor)
+    .then(contributeTest)
     .then(info => console.log(info));
     }
         //return writeFile(info);
