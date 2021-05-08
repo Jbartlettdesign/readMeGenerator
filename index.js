@@ -81,7 +81,7 @@ if (!answers.questions) {
 }
 return inquirer
 .prompt([
-    {
+    /*{
         type:'input',
         name: 'questions',
         message:'List any questions you may have regarding the app.',
@@ -94,7 +94,7 @@ return inquirer
               return false;
             }
           }
-    },
+    },*/
     {
         type:'input',
         name: 'gitHub',
