@@ -2,12 +2,8 @@
 const inquirer = require('inquirer');
 const writeFile = require('../readme-guide');
 const generator = require('../generation');
-//const answers = {yourAnswers:[], install:[]};
 // TODO: Create an array of questions for user input
-//const questions = [];
-//title of my project and sections entitled Description, 
-//Table of Contents, Installation, Usage, License, 
-//Contributing, Tests, and Questions
+
 const contributeTest = (answers) => {
     if(!answers.contributionAndTests){
         answers.contributionAndTests = [];
@@ -18,12 +14,28 @@ const contributeTest = (answers) => {
     {
         type:'input',
         name: 'contribute',
-        message: 'If you created an application or package and would like other developers to contribute it, you will want to add guidelines for how to do so. The Contributor Covenant is an industry standard, but you can always write your own.'
+        message: 'If you created an application or package and would like other developers to contribute it, you will want to add guidelines for how to do so. The Contributor Covenant is an industry standard, but you can always write your own.',
+        validate: contribute => {
+            if (contribute) {
+              return true;
+            } else {
+              console.log('Cannot skip!');
+              return false;
+            }
+          }
     },
     {
         type:'input',
         name: 'tester',
-        message: 'Go the extra mile and write tests for your application. Then provide examples on how to run them.'
+        message: 'Go the extra mile and write tests for your application. Then provide examples on how to run them.',
+        validate: tester => {
+            if (tester) {
+              return true;
+            } else {
+              console.log('Cannot skip!');
+              return false;
+            }
+          }
     }
 
     ]).then(
@@ -34,56 +46,45 @@ const contributeTest = (answers) => {
     )
 }
 const licenses = (answers) => {
-    if(!answers.license){
-        answers.license = [];
+    if(!answers.licenseList){
+        answers.licenseList = [];
     } 
     return inquirer
-    .prompt ([
-        
-    {
-        type:'input',
-        name: 'license',
-        message:'List your licenses.',
-        validate: license => {
-            if (license) {
-              return true;
-            } else {
-              console.log('Cannot skip!');
-              return false;
-            }
-          }
-    },
-           {
-               type:'confirm',
-               name: 'addAnother',
-               message:'Add another license?',
-           }
-    ])
-    .then(info => {
-        if(info.addAnother){
-            answers.license.push(info)
-            return licenses(answers);
-        }
-        else 
-        {            
-            answers.license.push(info)
-            return answers;
-        }
-
     
-})
-}
-const creditor = (answers) => {
+.prompt([
+    {
+      type: 'rawlist',
+      name: 'license',
+      message:'List your licenses.',
+      choices: ['MIT', 'Apache', 'GPLv3'],
+    },
+  ])
+  .then(info => {
+    if(info.addAnother){
+        
+        answers.licenseList.push(info);        
+        
+        return licenses(answers);
+    }
+    else 
+    {            
+        answers.licenseList.push(info);
 
-if (!answers.credits) {
-    answers.credits = [];
+        return answers;
+    }
+});
+}
+const questions = (answers) => {
+
+if (!answers.questions) {
+    answers.questions = [];
 }
 return inquirer
 .prompt([
     {
         type:'input',
-        name: 'credits',
-        message:'List your collaborators, if any, with links to their GitHub profiles.',
+        name: 'questions',
+        message:'List any questions you may have regarding the app.',
         validate: credits => {
             if (credits) {
 
@@ -93,10 +94,36 @@ return inquirer
               return false;
             }
           }
+    },
+    {
+        type:'input',
+        name: 'gitHub',
+        message: 'Enter a Github link.',
+        validate: gitHub => {
+            if (gitHub) {
+              return true;
+            } else {
+              console.log('Cannot skip!');
+              return false;
+            }
+          }
+    },
+    {
+        type:'input',
+        name: 'email',
+        message: 'Enter an email address.',
+        validate: email => {
+            if (email) {
+              return true;
+            } else {
+              console.log('Cannot skip!');
+              return false;
+            }
+          }
     }
 ])
 .then(info => {
-    answers.credits.push(info); 
+    answers.questions.push(info); 
     return answers;
 })
 }
@@ -197,7 +224,6 @@ return inquirer
     }
     
 ]).then(additional => {
-    //answers.install.push(answersToQuestions);
     
     if(additional.addAnotherStep){
         answers.install.push(additional);
@@ -271,27 +297,19 @@ function init() {
     .then(instructions)
     .then(screenShot)
     .then(licenses)
-    .then(creditor)
+    .then(questions)
     .then(contributeTest)
-    .then(info => console.log(info));
-    }
-        //return writeFile(info);
-        //return generator(info);
-        
-    /*.then(info => {
-        //console.log(info);
+    //.then(info => console.log(info)) 
+    .then(info => { 
         return generator(info)
-    })*/
-    
-    /*.then(file => {
-       return writeFile(file);
-       //console.log(file);
+    })
+    .then(info => {
+       return writeFile(info);
     }) 
     .catch(err => {
         console.log(err);
-      });
-*/
-
+    });
+    }
 
 // Function call to initialize app
 init();
