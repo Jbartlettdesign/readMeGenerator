@@ -136,7 +136,7 @@ const screenShot = (answers) => {
         {
             type:'input',
             name: 'enterScreenshot',
-            message: 'To add a screenshot, create an assets/images folder in your repository and upload your screenshot to it. Then, using the relative filepath, add it to your README using the following syntax: ![alt text](assets/images/screenshot.png)',
+            message: 'To add a screenshot, enter a url to a website',
             validate: screenshot => {
                if (screenshot) {
                  return true;
